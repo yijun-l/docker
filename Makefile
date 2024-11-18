@@ -11,7 +11,7 @@ all: $(OBJ)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 run: all
-	./$(EXEC)
+	sudo ./$(EXEC)
 
 clean:
 	rm -f $(OBJ) $(EXEC)
