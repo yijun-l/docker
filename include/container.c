@@ -55,7 +55,7 @@ void write_file(const char* filename, const char* content){
 void setup_user_namespace(){
     char buf[64];
     pid_t current_pid = getpid();
-    printf("before, UID: %d\n", getuid());
+    printf("before => UID: %d\n", getuid());
 
     sprintf(buf, "/proc/%d/setgroups", current_pid);
     write_file(buf, "deny\n");
@@ -66,7 +66,7 @@ void setup_user_namespace(){
     sprintf(buf, "/proc/%d/gid_map", current_pid);
     write_file(buf, "0 0 1\n");
 
-     printf("before, UID: %d\n", getuid());
+    printf("after  => UID: %d\n", getuid());
 }
 
 void run_container(){
