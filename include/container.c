@@ -5,6 +5,7 @@
 #include <sched.h>
 #include <string.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 
 
 // Print an error message and terminate the program
@@ -77,11 +78,24 @@ void run_container(){
     // mapping user to /proc/$$/uid_map
     setup_user_namespace();
 
-    // Start bash
-    char *args[] = {"/bin/bash", NULL};
-    if(execv("/bin/bash",args)){
-        sys_err("execv() failed");
+    pid_t pid = fork();
+
+    if (pid == -1){
+        sys_err("fork() failed");
     }
+
+    if (pid == 0){
+        printf("In PID Namespace, current pid changed to: %d\n", getpid());
+        // Start bash
+        char *args[] = {"/bin/bash", NULL};
+        if(execv("/bin/bash",args)){
+            sys_err("execv() failed");
+        }
+    } else {
+        int status;
+        wait(&status);
+    }
+    
 
 
 }
@@ -89,7 +103,7 @@ void run_container(){
 void run(){
 
     // create user/uts namespace
-    if (unshare(CLONE_NEWUTS | CLONE_NEWUSER)){
+    if (unshare(CLONE_NEWUTS | CLONE_NEWUSER | CLONE_NEWPID)){
         sys_err("unshare() failed");
     }
 

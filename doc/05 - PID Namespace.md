@@ -8,7 +8,7 @@ The **procfs (process file system)** is a virtual file system in Linux, mounted 
 
 - **Dynamic Updates**: The data within procfs files is constantly updated by the kernel, ensuring that users always see the most current information.
 
-- **Kernel Configuration Interface** Certain files in `/proc` enable users to adjust system behavior without restarting. For example, files under `/proc/sys/` allow runtime modifications to networking or process limits.
+- **Kernel Configuration Interface**: Certain files in `/proc` enable users to adjust system behavior without restarting. For example, files under `/proc/sys/` allow runtime modifications to networking or process limits.
 
 Procfs is a critical resource for system administrators and tools like `top`, `ps`, and `sysctl`, providing an efficient way to access and manage system internals.
 
@@ -45,3 +45,39 @@ The `/proc/sys/` directory houses tunable kernel parameters that control various
 - **General Behavior**: Adjustments to settings like kernel panic behavior can be made here.
 
 These files can be modified using commands like `sysctl` or by directly echoing values into them.
+
+# PID Namespace
+
+In Linux, every process is assigned a unique numeric identifier known as the Process ID (PID). These IDs are typically global across the system. However, in scenarios such as containers, where multiple environments need to coexist, sharing a global PID space can lead to conflicts or unintended interactions.
+
+The PID namespace addresses this issue by providing isolated PID spaces for processes. Below are its key characteristics:
+
+- **Isolation**: Processes in a PID namespace can only see and interact with other processes in the same namespace or its children. This ensures that processes in one namespace are invisible to processes in other namespaces, enhancing isolation.
+
+- **Nested Namespaces**: PID namespaces can be nested, meaning a namespace can create child namespaces. A process in a parent namespace can see all processes in its child namespaces, but the reverse is not true.
+
+- **Unique PID Hierarchy**: Within a PID namespace, the first process started (PID 1) acts as the "init" process of that namespace. It is responsible for reaping orphaned processes and managing signals within the namespace. If this process exits, the kernel terminates all other processes in the namespace.
+
+### Testing via unshare
+
+```bash
+$ unshare --pid --fork
+
+$ echo $$
+1
+
+$ mkdir proc
+$ mount -t proc proc ./proc
+
+$ ls proc
+1          devices      ioports      loadavg       partitions   sysrq-trigger
+33         diskstats    irq          locks         sched_debug  sysvipc
+acpi       dma          kallsyms     mdstat        schedstat    thread-self
+buddyinfo  driver       kcore        meminfo       scsi         timer_list
+bus        execdomains  keys         misc          self         tty
+cgroups    fb           key-users    modules       slabinfo     uptime
+cmdline    filesystems  kmsg         mounts        softirqs     version
+consoles   fs           kpagecgroup  mtrr          stat         vmallocinfo
+cpuinfo    interrupts   kpagecount   net           swaps        vmstat
+crypto     iomem        kpageflags   pagetypeinfo  sys          zoneinfo
+```
