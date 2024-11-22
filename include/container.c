@@ -6,6 +6,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <sys/mount.h>
 
 
 // Print an error message and terminate the program
@@ -86,24 +87,26 @@ void run_container(){
 
     if (pid == 0){
         printf("In PID Namespace, current pid changed to: %d\n", getpid());
+
+        // Mount procfs
+        if(mount("proc", "/proc", "proc", 0, NULL) != 0){
+            sys_err("mount() failed");
+        }
+        
         // Start bash
         char *args[] = {"/bin/bash", NULL};
         if(execv("/bin/bash",args)){
             sys_err("execv() failed");
         }
     } else {
-        int status;
-        wait(&status);
+        wait(NULL);
     }
-    
-
-
 }
 
 void run(){
 
     // create user/uts namespace
-    if (unshare(CLONE_NEWUTS | CLONE_NEWUSER | CLONE_NEWPID)){
+    if (unshare(CLONE_NEWUTS | CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWNS)){
         sys_err("unshare() failed");
     }
 
