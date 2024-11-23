@@ -5,3 +5,5 @@
 # Compiled file 
 #######################################
 build/
+bin/
+rootfs/
