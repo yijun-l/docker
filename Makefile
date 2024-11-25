@@ -8,7 +8,7 @@ BIN_DIR = bin
 ROOTFS_DIR = rootfs
 
 # Source files and object files
-SRC = src/common.c src/container.c src/main.c
+SRC = src/common.c src/container.c src/main.c src/overlayfs.c
 OBJ = $(SRC:src/%.c=$(BUILD_DIR)/%.o)
 
 # Executable name
@@ -16,7 +16,7 @@ EXEC = adocker
 
 # Copy Exe Script
 COPY_EXE_SCRIPT = ./copy_exe.sh
-COMMANDS = bash ps ls
+COMMANDS = bash ps ls id
 
 # Targets
 .PHONY: all clean run
@@ -39,6 +39,7 @@ $(BUILD_DIR)/%.o: src/%.c
 
 # Clean up the build, bin and rootfs directories
 clean:
+	sudo umount -f $(ROOTFS_DIR)/merged_dir || true
 	rm -rf $(BUILD_DIR) $(BIN_DIR) $(ROOTFS_DIR)
 
 # Run the executable

@@ -18,11 +18,15 @@ fi
 
 # Create the rootfs directory structure (if it doesn't already exist)
 rootfs="./rootfs"
-bin_dir="$rootfs/bin"
-lib_dir="$rootfs/lib64"
-proc_dir="$rootfs/proc"
+lower_dir="$rootfs/lower_dir"
+upper_dir="$rootfs/upper_dir"
+work_dir="$rootfs/work_dir"
+merged_dir="$rootfs/merged_dir"
+bin_dir="$lower_dir/bin"
+lib_dir="$lower_dir/lib64"
+proc_dir="$lower_dir/proc"
 
-mkdir -p "$bin_dir" "$lib_dir" "$proc_dir"
+mkdir -p "$merged_dir" "$upper_dir" "$work_dir" "$bin_dir" "$lib_dir" "$proc_dir"
 
 # Copy the executable to the rootfs/bin directory
 executable_name=$(basename "$executable")
@@ -32,8 +36,6 @@ cp "$executable" "$bin_dir/$executable_name"
 echo "Fetching dependencies for $executable..."
 ldd "$executable" | while read -r line; do
     # Match valid library paths (filter out lines without actual paths, like "linux-vdso.so.1")
-    # if [[ "$line" =~ "=>[[:space:]]*(/.*\.so.[0-9]*)" ]]; then
-    # if [[ "$line" =~ \=\>\ (.*)\ (.*) ]]; then
     if [[ "$line" =~ (/.*)\ (.*) ]]; then
         lib_path="${BASH_REMATCH[1]}"
       
@@ -45,4 +47,4 @@ ldd "$executable" | while read -r line; do
     fi
 done
 
-echo "Setup complete. The executable and its libraries are in '$rootfs'."
+echo "Setup complete. The executable and its libraries are in '$lower_dir'."

@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 #include <sys/mount.h>
 #include "../include/common.h"
+#include "../include/overlayfs.h"
 
 void run_container(){
 
@@ -23,7 +24,7 @@ void run_container(){
     if (pid == 0){
         printf("In PID Namespace, current pid changed to: %d\n", getpid());
 
-        if(chroot("rootfs") == -1){
+        if(chroot("rootfs/merged_dir") == -1){
             sys_err("chroot() failed");
         }
 
@@ -47,6 +48,8 @@ void run_container(){
 }
 
 void run(){
+
+    setup_overlayfs("rootfs/lower_dir", "rootfs/upper_dir", "rootfs/work_dir", "rootfs/merged_dir");
 
     // create user/uts namespace
     if (unshare(CLONE_NEWUTS | CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWNS)){
