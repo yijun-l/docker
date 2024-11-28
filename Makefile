@@ -16,7 +16,7 @@ EXEC = adocker
 
 # Copy Exe Script
 COPY_EXE_SCRIPT = ./copy_exe.sh
-COMMANDS = bash ps ls id
+COMMANDS = bash ps ls id hostname ip env
 
 # Targets
 .PHONY: all clean run

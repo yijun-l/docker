@@ -33,7 +33,7 @@ executable_name=$(basename "$executable")
 cp "$executable" "$bin_dir/$executable_name"
 
 # Use ldd to find the dependent libraries and copy them to rootfs/lib
-echo "Fetching dependencies for $executable..."
+# echo "Fetching dependencies for $executable..."
 ldd "$executable" | while read -r line; do
     # Match valid library paths (filter out lines without actual paths, like "linux-vdso.so.1")
     if [[ "$line" =~ (/.*)\ (.*) ]]; then
@@ -41,10 +41,10 @@ ldd "$executable" | while read -r line; do
       
         # If the library file exists and has not been copied already, copy it to the lib directory
         if [ -f "$lib_path" ] && [ ! -f "$lib_dir/$(basename "$lib_path")" ]; then
-            echo "Copying library: $lib_path"
+            # echo "Copying library: $lib_path"
             cp "$lib_path" "$lib_dir/"
         fi
     fi
 done
 
-echo "Setup complete. The executable and its libraries are in '$lower_dir'."
+# echo "Setup complete. The executable and its libraries are in '$lower_dir'."

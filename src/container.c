@@ -22,7 +22,7 @@ void run_container(){
     }
 
     if (pid == 0){
-        printf("In PID Namespace, current pid changed to: %d\n", getpid());
+        info("In PID Namespace, current pid changed to: %d\n", getpid());
 
         if(chroot("rootfs/merged_dir") == -1){
             sys_err("chroot() failed");
@@ -52,11 +52,11 @@ void run(){
     setup_overlayfs("rootfs/lower_dir", "rootfs/upper_dir", "rootfs/work_dir", "rootfs/merged_dir");
 
     // create user/uts namespace
-    if (unshare(CLONE_NEWUTS | CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWNS)){
+    if (unshare(CLONE_NEWUTS | CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWNS | CLONE_NEWNET)){
         sys_err("unshare() failed");
     }
 
-    printf("Namespace created successfully.\n");
+    info("Namespace created successfully.\n");
 
     run_container();
 
