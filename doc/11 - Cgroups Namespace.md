@@ -1,18 +1,16 @@
 # Control Groups
 
-Control Groups, commonly referred to as cgroups, is a powerful Linux kernel feature that allows system administrators to allocate and manage resources such as CPU, memory, network bandwidth, and more among user-defined groups of processes. This dynamic resource management capability helps in monitoring, optimizing system performance, and ensuring fair resource allocation among different processes and users.
+**Control Groups**, commonly referred to as **cgroups**, is a powerful Linux kernel feature that allows system administrators to allocate and manage resources such as CPU, memory, network bandwidth, and more among user-defined groups of processes. This dynamic resource management capability helps in monitoring, optimizing system performance, and ensuring fair resource allocation among different processes and users.
 
 There are two versions of cgroups:
 
-### cgroup v1
-Cgroup v1 is the original implementation of cgroups in Linux. It uses multiple hierarchies, where each hierarchy manages a single resource, such as CPU, memory, or I/O. In v1, a resource can only be managed under one hierarchy at a time, and each hierarchy can have different subsystems attached to it. 
+- **Cgroup v1** is the original implementation of cgroups in Linux. It uses multiple hierarchies, where each hierarchy manages a single resource, such as CPU, memory, or I/O. In v1, a resource can only be managed under one hierarchy at a time, and each hierarchy can have different subsystems attached to it. 
 
-### cgroup v2
-Cgroup v2 is the newer and more unified implementation of cgroups. Unlike v1, cgroup v2 uses a single hierarchy for all resources, making it simpler and more flexible to manage. In cgroup v2, all resources are treated uniformly, and tasks can be grouped in a single hierarchy, regardless of the resource type.
+- **Cgroup v2** is the newer and more unified implementation of cgroups. Unlike v1, cgroup v2 uses a single hierarchy for all resources, making it simpler and more flexible to manage. In cgroup v2, all resources are treated uniformly, and tasks can be grouped in a single hierarchy, regardless of the resource type.
 
 ## Resource Organization
 
-Cgroups have multiple, independent hierarchies that can coexist on the same system. Each hierarchy is mounted under the /sys/fs/cgroup/ directory and can manage a different resource or set of resources. This modularity allows for fine-grained resource control.
+Cgroups have multiple, independent hierarchies that can coexist on the same system. Each hierarchy is mounted under the `/sys/fs/cgroup/` directory and this modularity allows for fine-grained resource control.
 
 The following are the primary subsystems provided by cgroups:
 
@@ -115,4 +113,51 @@ $ stress --vm 1 --vm-bytes 200M
 $ top
     PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
   15196 dadmin    20   0  212780 101708    276 R  24.5   5.6   0:08.10 stress
+```
+<br>
+
+# Cgroup Namespace
+
+A **cgroup namespace** isolates how processes view the cgroup hierarchy. By creating a cgroup namespace, processes see only the subtree they belong to, and this subtree appears as the full hierarchy. This isolation ensures that processes inside a namespace cannot access or manage cgroups outside their view, which is particularly useful in containerized environments.
+
+### Before Namespace Creation
+
+The `bash` process belongs to the global cgroup hierarchy.
+
+```bash
+$ cat /proc/$$/cgroup
+12:devices:/system.slice/sshd.service
+11:memory:/user.slice/user-1000.slice/session-34.scope
+10:freezer:/
+9:cpu,cpuacct:/
+8:rdma:/
+7:cpuset:/
+6:net_cls,net_prio:/
+5:hugetlb:/
+4:perf_event:/
+3:pids:/user.slice/user-1000.slice/session-34.scope
+2:blkio:/system.slice/sshd.service
+1:name=systemd:/user.slice/user-1000.slice/session-34.scope
+```
+
+### After Namespace Creation
+
+When a new cgroup namespace is created, the current cgroup subtree of the process becomes the root for the new namespace. Processes inside this namespace see paths relative to this root.
+
+```bash
+$ sudo unshare --cgroup
+
+$ cat /proc/$$/cgroup
+12:devices:/
+11:memory:/
+10:freezer:/
+9:cpu,cpuacct:/
+8:rdma:/
+7:cpuset:/
+6:net_cls,net_prio:/
+5:hugetlb:/
+4:perf_event:/
+3:pids:/
+2:blkio:/
+1:name=systemd:/
 ```

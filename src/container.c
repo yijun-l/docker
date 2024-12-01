@@ -56,7 +56,7 @@ void run(){
     create_ipc_components();
 
     // create user/uts namespace
-    if (unshare(CLONE_NEWUTS | CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWNS | CLONE_NEWNET | CLONE_NEWIPC)){
+    if (unshare(CLONE_NEWUTS | CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWNS | CLONE_NEWNET | CLONE_NEWIPC | CLONE_NEWCGROUP)){
         sys_err("unshare() failed");
     }
 
