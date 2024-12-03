@@ -42,7 +42,15 @@ $(BUILD_DIR)/%.o: src/%.c
 clean:
 	sudo umount -f $(ROOTFS_DIR)/merged_dir || true
 	rm -rf $(BUILD_DIR) $(BIN_DIR) $(ROOTFS_DIR)
+	
 
 # Run the executable
 run: all
 	sudo $(BIN_DIR)/$(EXEC)
+
+# containerd
+cd:
+	$(MAKE) -C containerd run
+
+ccd:
+	$(MAKE) -C containerd clean
