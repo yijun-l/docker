@@ -4,4 +4,9 @@
 // Print an error message and terminate the program
 extern void sys_err(const char* msg);
 
+// Log module
+extern void xlog_init(const char* filename);
+extern void xlog(const char *format, ...) ;
+extern void xlog_close();
+
 #endif

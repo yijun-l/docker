@@ -7,6 +7,7 @@ LFLAGS = -lrt -pthread
 BUILD_DIR = build
 BIN_DIR = bin
 ROOTFS_DIR = rootfs
+LOG_DIR = log
 
 # Source files and object files
 SRC = src/common.c src/container.c src/main.c src/overlayfs.c src/ipc.c
@@ -41,7 +42,7 @@ $(BUILD_DIR)/%.o: src/%.c
 # Clean up the build, bin and rootfs directories
 clean:
 	sudo umount -f $(ROOTFS_DIR)/merged_dir || true
-	rm -rf $(BUILD_DIR) $(BIN_DIR) $(ROOTFS_DIR)
+	rm -rf $(BUILD_DIR) $(BIN_DIR) $(ROOTFS_DIR) $(LOG_DIR)
 	
 
 # Run the executable

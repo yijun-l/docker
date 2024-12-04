@@ -7,6 +7,7 @@
 #include "common.h"
 
 #define PID_FILE "/var/run/acontainerd.pid"
+#define LOG_FILE "../log/adocker.log"
 
 void write_pid(){
     FILE* pid_file = fopen(PID_FILE, "w");
@@ -74,12 +75,16 @@ static void go_background(){
 }
 
 int main(){
+    xlog_init(LOG_FILE);
 
     go_background();
+    xlog("running as a daemon process");
+
     
     while(1){
         sleep(10);
     }
 
+    xlog_close();
     return 0;
 }

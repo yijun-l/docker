@@ -6,6 +6,7 @@ LFLAGS =
 # Directories
 BUILD_DIR = build
 BIN_DIR = bin
+LOG_DIR = ../log
 
 # Source files and object files
 SRC = common.c main.c
@@ -18,6 +19,7 @@ PID_FILE = /var/run/$(EXEC).pid
 
 # Default target
 all: $(BIN_DIR)/$(EXEC)
+	@mkdir -p $(LOG_DIR)
 
 # Rule to build executable
 $(BIN_DIR)/$(EXEC): $(OBJ)
