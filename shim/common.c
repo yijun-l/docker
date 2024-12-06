@@ -35,7 +35,7 @@ void xlog(const char *format, ...) {
     struct tm *t = localtime(&now);
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", t);
 
-    fprintf(logfile, "[%s] %s[%d]: ", timestamp, "containerd", getpid());
+    fprintf(logfile, "[%s] %s[%d]: ", timestamp, "shim", getpid());
 
     va_list args;
     va_start(args, format);

@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include "common.h"
 
-#define PID_FILE "/var/run/acontainerd.pid"
+#define PID_FILE "/var/run/ashim.pid"
 #define LOG_FILE "../log/adocker.log"
 
 int main(){

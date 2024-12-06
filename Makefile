@@ -55,3 +55,10 @@ cd:
 
 ccd:
 	$(MAKE) -C containerd clean
+
+# shim
+sm:
+	$(MAKE) -C shim run
+
+csm:
+	$(MAKE) -C shim clean
