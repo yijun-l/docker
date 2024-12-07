@@ -9,7 +9,7 @@ BIN_DIR = bin
 LOG_DIR = ../log
 
 # Source files and object files
-SRC = common.c main.c
+SRC = common.c main.c unix_socket.c
 OBJ = $(SRC:%.c=$(BUILD_DIR)/%.o)
 
 # Executable name
@@ -45,7 +45,7 @@ clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
 	@if [ -f $(PID_FILE) ]; then \
 		echo "Stopping $(EXEC)..."; \
-		sudo kill `cat $(PID_FILE)` && sudo rm -f $(PID_FILE); \
+		sudo kill `cat $(PID_FILE)`; \
 		echo "$(EXEC) stopped."; \
 	else \
 		echo "$(EXEC) is not running."; \

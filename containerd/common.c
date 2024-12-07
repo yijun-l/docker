@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <time.h>
@@ -54,6 +55,12 @@ void xlog_close(){
         sys_err("failed to close() log file");
     }
     logfile == NULL;
+}
+
+// write an error message to log file
+void log_err(const char* msg){
+    xlog("%s: %s", msg, strerror(errno));
+    exit(EXIT_FAILURE);
 }
 
 // daemonlize module
