@@ -30,7 +30,7 @@ int listen_unix_socket(const char* sockfile){
         log_err("listen() failed");
     }
 
-    xlog("server is waiting for connections...");
+    xlog("is listening on %s.", sockfile);
 
     return server_fd;
 }
@@ -79,6 +79,32 @@ void connect_unix_socket(const char* sockfile){
     if (bytes_read > 0){
         xlog("Received message from server %s", buffer);
     }
+
+    close(client_fd);
+}
+
+void forward_unix_socket(const char* sockfile, char* msg){
+    struct sockaddr_un server_addr;
+
+    int client_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (client_fd == -1){
+        log_err("socket() failed");
+    }
+
+    server_addr.sun_family = AF_UNIX;
+    strncpy(server_addr.sun_path, sockfile, sizeof(server_addr.sun_path) - 1);
+
+    if(connect(client_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) == -1){
+        close(client_fd);
+        log_err("connect() failed");
+    }
+
+    char buffer[BUFFER_SIZE];
+
+    write(client_fd, msg, strlen(msg));
+
+    int bytes_read = read(client_fd, buffer, sizeof(buffer) - 1);
+    strcpy(msg, buffer);
 
     close(client_fd);
 }

@@ -3,10 +3,12 @@
 #include <signal.h>
 #include "common.h"
 #include "unix_socket.h"
+#include "event_loop.h"
 
 #define PID_FILE "/var/run/ashim.pid"
 #define LOG_FILE "../log/adocker.log"
-#define SOCK_FILE "/var/run/acontainerd.sock"
+#define SOCK_FILE "/var/run/ashim.sock"
+
 
 void handle_sigterm(int sig){
     xlog("Received SIGTERM (signal %d). Cleaning up and exiting...", sig);
@@ -24,12 +26,8 @@ int main(){
         log_err("signal() failed");
     }
 
-    connect_unix_socket(SOCK_FILE);
-
+    run_event_loop();
     
-    while(1){
-        sleep(10);
-    }
 
     xlog_close();
     return 0;
