@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/mount.h>
-#include "../include/common.h"
-#include "../include/overlayfs.h"
+#include "common.h"
+#include "overlayfs.h"
 
 
 void setup_overlayfs(const char* lowerdir, const char* upperdir, const char* workdir, const char* mergedir){

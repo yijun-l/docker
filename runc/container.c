@@ -4,9 +4,9 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/mount.h>
-#include "../include/common.h"
-#include "../include/overlayfs.h"
-#include "../include/ipc.h"
+#include "common.h"
+#include "overlayfs.h"
+#include "ipc.h"
 
 void run_container(){
 

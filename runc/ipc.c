@@ -1,4 +1,4 @@
-#include "../include/common.h"
+#include "common.h"
 #include <stdio.h>
 #include <mqueue.h>
 #include <sys/mman.h>

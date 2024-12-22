@@ -4,7 +4,7 @@
 #include <sched.h>
 #include <string.h>
 #include <fcntl.h>
-#include "../include/common.h"
+#include "common.h"
 
 // Print an error message and terminate the program
 void sys_err(const char* msg){
