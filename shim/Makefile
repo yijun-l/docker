@@ -1,7 +1,7 @@
 # Compiler and Flags
 CC = gcc
 CFLAGS = 
-LFLAGS = 
+LFLAGS = -lutil
 
 # Directories
 BUILD_DIR = build
@@ -9,7 +9,7 @@ BIN_DIR = bin
 LOG_DIR = ../log
 
 # Source files and object files
-SRC = common.c main.c unix_socket.c event_loop.c
+SRC = common.c main.c unix_socket.c event_loop.c init_runc.c
 OBJ = $(SRC:%.c=$(BUILD_DIR)/%.o)
 
 # Executable name

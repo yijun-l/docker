@@ -1,8 +1,15 @@
 # Directories
 LOG_DIR = log
+RUNC = runc/bin/arunc
 
 # Start daemon processes
 all:
+	@if [ ! -f $(RUNC) ]; then \
+		$(MAKE) -C runc; \
+		echo "$(RUNC) created"; \
+	else \
+		echo "$(RUNC) exists!"; \
+	fi
 	$(MAKE) -C containerd run
 	$(MAKE) -C shim run
 

@@ -108,3 +108,22 @@ void forward_unix_socket(const char* sockfile, char* msg){
 
     close(client_fd);
 }
+
+int get_forward_unix_socket_fd(const char* sockfile){
+    struct sockaddr_un server_addr;
+
+    int client_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (client_fd == -1){
+        log_err("socket() failed");
+    }
+
+    server_addr.sun_family = AF_UNIX;
+    strncpy(server_addr.sun_path, sockfile, sizeof(server_addr.sun_path) - 1);
+
+    if(connect(client_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) == -1){
+        close(client_fd);
+        log_err("connect() failed");
+    }
+
+    return client_fd;
+}
