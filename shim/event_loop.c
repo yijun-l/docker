@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <sys/epoll.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -40,10 +41,14 @@ void run_event_loop(){
 
     int server_fd = listen_unix_socket(SOCK_FILE);
     int epoll_fd = epoll_init();
+    int event_count = 0;
     epoll_add_read_event(epoll_fd, server_fd, -1);
 
     while(1){
-        int event_count = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
+        do {
+        event_count = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
+        } while (event_count == -1 && errno == EINTR);
+
         if(event_count == -1){
             log_err("epoll_wait() failed");
         }
@@ -66,31 +71,15 @@ void run_event_loop(){
                     free(data);
                 }
                 if (bytes_read > 0){
-                    xlog("Received message from containerd %s", buffer);
-                }
-                if(data->forward_fd == -1){
-                    data->forward_fd = init_runc();
-                    epoll_add_read_event(epoll_fd, data->forward_fd,data->fd);
-                }
+                    if(data->forward_fd == -1){
+                        data->forward_fd = init_runc();
+                        epoll_add_read_event(epoll_fd, data->forward_fd,data->fd);
+                    }
 
-                if(write(data->forward_fd, buffer, bytes_read) == -1){
-                    xlog("failed forward message to container process");
+                    if(write(data->forward_fd, buffer, bytes_read) == -1){
+                        xlog("failed forward message to container process");
+                    }
                 }
-                // memset(buffer, 0, sizeof(buffer));
-                // while(1){
-                //     bytes_read = read(master_fd, buffer, sizeof(buffer) -1);
-                //     if (bytes_read == 0){
-                //         xlog("connection (fd: %d) disconnected", events[i].data.fd);
-                //         close(events[i].data.fd);
-                //     }
-                //     if (bytes_read > 0){
-                //         xlog("Received message from runc %s", buffer);
-                //     }
-                //     write(events[i].data.fd, buffer, bytes_read);
-                // }
-
-                // const char* response = "Reply from ashim\n";
-                // write(events[i].data.fd, response, strlen(response));
             }
         }
 

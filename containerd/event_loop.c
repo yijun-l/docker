@@ -63,12 +63,14 @@ void run_event_loop(){
                 if (bytes_read == 0){
                     xlog("connection (fd: %d) disconnected", data->fd);
                     close(data->fd);
+                    free(data);
                 }
-                if(data->forward_fd == -1){
-                    data->forward_fd = get_forward_unix_socket_fd(SHIM_FILE);
-                    epoll_add_read_event(epoll_fd, data->forward_fd, data->fd);
-                }
+                
                 if (bytes_read > 0){
+                    if(data->forward_fd == -1){
+                        data->forward_fd = get_forward_unix_socket_fd(SHIM_FILE);
+                        epoll_add_read_event(epoll_fd, data->forward_fd, data->fd);
+                    }
                     // forward_unix_socket(SHIM_FILE, buffer);
                     write(data->forward_fd, buffer, strlen(buffer));
                 }

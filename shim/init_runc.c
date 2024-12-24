@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <termios.h>
 #include <sys/types.h>
 #include <pty.h>
 #include "common.h"
@@ -7,6 +8,18 @@
 #define container_process "/home/dadmin/docker/runc/bin/arunc"
 
 int master_fd = 0;
+
+void tty_config(int tty_fd){
+    struct termios tty;
+    if (tcgetattr(tty_fd, &tty) == -1) {
+        log_err("Failed to get terminal attributes");
+    }
+    tty.c_lflag |= ICANON | ISIG;
+    tty.c_lflag &= ~ECHO;  // disable echo
+    if (tcsetattr(tty_fd, TCSANOW, &tty) == -1) {
+        log_err("Failed to set terminal attributes");
+    }
+}
 
 int init_runc(){
     if(master_fd){
@@ -30,6 +43,7 @@ int init_runc(){
     // child process
     if (pid == 0){
         close(master_fd);
+        tty_config(slave_fd);
         if (dup2(slave_fd, STDIN_FILENO) == -1 ||
             dup2(slave_fd, STDOUT_FILENO) == -1 ||
             dup2(slave_fd, STDERR_FILENO) == -1) {

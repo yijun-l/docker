@@ -84,7 +84,6 @@ void ch_hostname(const char* new_hostname){
     if(gethostname(hostname, sizeof(hostname))){
         log_err("gethostname() failed");
     };
-    printf("%s\n", hostname);
 }
 
 void write_file(const char* filename, const char* content){
