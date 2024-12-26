@@ -25,8 +25,16 @@ merged_dir="$rootfs/merged_dir"
 bin_dir="$lower_dir/bin"
 lib_dir="$lower_dir/lib64"
 proc_dir="$lower_dir/proc"
+etc_dir="$lower_dir/etc"
+root_dir="$lower_dir/root"
 
-mkdir -p "$merged_dir" "$upper_dir" "$work_dir" "$bin_dir" "$lib_dir" "$proc_dir"
+mkdir -p "$merged_dir" "$upper_dir" "$work_dir" "$bin_dir" "$lib_dir" "$proc_dir" "$etc_dir" "$root_dir" 
+
+cp /etc/profile "$etc_dir"
+cp /etc/bashrc "$etc_dir"
+echo 'export PS1="[\u@\h \W]\$ "' >> "$root_dir/.bashrc"
+cp /etc/passwd "$etc_dir"
+cp /lib64/libnss_files.so.2 "$lib_dir"
 
 # Copy the executable to the rootfs/bin directory
 executable_name=$(basename "$executable")

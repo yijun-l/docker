@@ -12,6 +12,7 @@ all:
 	fi
 	$(MAKE) -C containerd run
 	$(MAKE) -C shim run
+	$(MAKE) -C cli
 
 # Clean up the build, bin and rootfs directories
 clean:
@@ -19,6 +20,7 @@ clean:
 	$(MAKE) -C containerd clean
 	$(MAKE) -C shim clean
 	$(MAKE) -C runc clean
+	$(MAKE) -C cli clean
 
 # containerd
 cd:
@@ -40,3 +42,10 @@ rc:
 
 crc:
 	$(MAKE) -C runc clean
+
+# cli
+adocker:
+	$(MAKE) -C cli
+
+cad:
+	$(MAKE) -C cli clean
