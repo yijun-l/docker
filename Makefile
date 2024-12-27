@@ -21,6 +21,8 @@ clean:
 	$(MAKE) -C shim clean
 	$(MAKE) -C runc clean
 	$(MAKE) -C cli clean
+	sudo rm -f /var/run/ashim.*
+	sudo rm -f /var/run/acontainerd.*
 
 # containerd
 cd:

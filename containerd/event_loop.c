@@ -13,6 +13,9 @@
 #define SHIM_FILE "/var/run/ashim.sock"
 #define MAX_EVENTS 10
 
+int is_running = 0;
+int is_connected = 0;
+
 int epoll_init(){
     int epoll_fd = epoll_create1(0);
     if (epoll_fd == -1){
@@ -62,19 +65,38 @@ void run_event_loop(){
                 int bytes_read = read(data->fd, buffer, sizeof(buffer) - 1);
                 if (bytes_read == 0){
                     xlog("connection (fd: %d) disconnected", data->fd);
+                    is_connected = 0;
                     close(data->fd);
                     free(data);
                 }
                 
                 if (bytes_read > 0){
-                    if(data->forward_fd == -1){
-                        data->forward_fd = get_forward_unix_socket_fd(SHIM_FILE);
-                        epoll_add_read_event(epoll_fd, data->forward_fd, data->fd);
+                    if (is_connected){
+                        write(data->forward_fd, buffer, strlen(buffer));
+                    
+                    } else if (strcmp(buffer, "ps") == 0){
+                        memset(buffer, 0, sizeof(buffer));
+                        if(is_running){
+                            strcpy(buffer, "Bash container is running...");
+                        } else {
+                            strcpy(buffer, "Bash container is NOT running...");
+                        }
+                        write(data->fd, buffer, strlen(buffer));
+                    } else if (strcmp(buffer, "connect") == 0 && !is_connected){
+                        if(data->forward_fd == -1){
+                            data->forward_fd = get_forward_unix_socket_fd(SHIM_FILE);
+                            epoll_add_read_event(epoll_fd, data->forward_fd, data->fd);
+                        }
+                        is_connected = 1;
+                        write(data->forward_fd, " ", 1);
+                        memset(buffer, 0, sizeof(buffer));
+                        bytes_read = read(data->forward_fd, buffer, sizeof(buffer) - 1);
+                        if(buffer[0] == ' '){
+                            memmove(buffer, buffer + 1, strlen(buffer));
+                        }
+                        write(data->fd, buffer, strlen(buffer));
                     }
-                    // forward_unix_socket(SHIM_FILE, buffer);
-                    write(data->forward_fd, buffer, strlen(buffer));
                 }
-                // write(data->fd, buffer, strlen(buffer));
             }
         }
 

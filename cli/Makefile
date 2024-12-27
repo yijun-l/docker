@@ -9,7 +9,7 @@ BIN_DIR = bin
 BIN_DST = /usr/local/bin
 
 # Source files and object files
-SRC =  main.c
+SRC =  main.c common.c
 OBJ = $(SRC:%.c=$(BUILD_DIR)/%.o)
 
 # Executable name
