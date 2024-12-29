@@ -26,9 +26,11 @@ void usage (int status){
 \n\
     adocker is a client for interacting with the daemon through the CLI.\n\
 \n\
-        help        display this help and exit\n\
-        version     output version information and exit\n\
-        connect     connect to a bash container\n\
+        help        Display this help message and exit\n\
+        version     Show version information and exit\n\
+        ps          List running containers and their statuses\n\
+        start       Start a container process\n\
+        attach      Attach to a running bash container\n\
 \n\
 ", stdout);
     }
@@ -74,27 +76,10 @@ void show_version(){
     printf("version %s, %s\n", VER, DATE);
 }
 
-void docker_ps(){
-    char buffer[BUFFER_SIZE];
+int send_command(char* buffer, const char* command){
     memset(buffer, 0, sizeof(buffer));
     int client_fd = connect_sock_file();
-    const char* msg = "ps";
-    if(send(client_fd, msg, strlen(msg), 0) == -1){
-        sys_err("send()");
-    }
-    int received_bytes = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
-    if(received_bytes == -1){
-        sys_err("recv() failed");
-    }
-    printf("==> %s\n", buffer);
-    close(client_fd);
-}
-
-void docker_connect(){
-    char buffer[BUFFER_SIZE];
-    memset(buffer, 0, sizeof(buffer));
-    int client_fd = connect_sock_file();
-    const char* msg = "connect";
+    const char* msg = command;
     if(send(client_fd, msg, strlen(msg), 0) == -1){
         sys_err("send()");
     }
@@ -106,15 +91,32 @@ void docker_connect(){
         close(client_fd);
         exit(EXIT_FAILURE);
     }
+    return client_fd;
+}
+
+void send_one_command(const char* command){
+    char buffer[BUFFER_SIZE];
+    int client_fd = send_command(buffer, command);
+    printf("==> %s\n", buffer);
+    close(client_fd);
+}
+
+void docker_connect(){
+    char buffer[BUFFER_SIZE];
+    int received_bytes;
+    int client_fd = send_command(buffer, "attach");
     printf("%s", buffer);
-    
+    if(strcmp(buffer, "Bash container is NOT running...") == 0){
+        printf("\n");
+        exit(EXIT_SUCCESS);
+    }
     while(1){
         memset(buffer, 0, sizeof(buffer));
         if (fgets(buffer, BUFFER_SIZE, stdin) == NULL) {
             sys_err("fgets()");
         }
         if (strcmp(buffer, "exit\n") == 0) {
-            // TODO: leave the session, close fd.
+            close(client_fd);
             printf("Exiting client.\n");
             exit(EXIT_SUCCESS);
         }
@@ -143,12 +145,10 @@ int main(int argc, char* argv[]){
     } else if (strcmp(argv[1], "version") == 0){
         show_version();
     } else if (strcmp(argv[1], "ps") == 0){
-        docker_ps();
+        send_one_command(argv[1]);
     } else if (strcmp(argv[1], "start") == 0){
-        show_version();
-    } else if (strcmp(argv[1], "stop") == 0){
-        show_version();
-    } else if (strcmp(argv[1], "connect") == 0){
+        send_one_command(argv[1]);
+    } else if (strcmp(argv[1], "attach") == 0){
         docker_connect();
     }else {
         usage(EXIT_FAILURE);

@@ -15,6 +15,8 @@
 
 int is_running = 0;
 int is_connected = 0;
+int container_fd = -1;
+int counter = 0;
 
 int epoll_init(){
     int epoll_fd = epoll_create1(0);
@@ -32,9 +34,19 @@ int epoll_add_read_event(int epoll_fd, int event_fd, int forward_fd){
     data->fd = event_fd;
     data->forward_fd = forward_fd;
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, event_fd, &event) == -1){
-        xlog("epoll_ctl() EPOLL_CTL_ADD failed");
+        log_err("epoll_ctl() EPOLL_CTL_ADD failed");
         return -1;
     }
+    xlog("add %d to epoll", event_fd);
+    return 0;
+}
+
+int epoll_remove_read_event(int epoll_fd, int event_fd){
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL) == -1){
+        log_err("epoll_ctl() EPOLL_CTL_DEL failed");
+        return -1;
+    }
+    xlog("remove %d from epoll", event_fd);
     return 0;
 }
 
@@ -66,6 +78,10 @@ void run_event_loop(){
                 if (bytes_read == 0){
                     xlog("connection (fd: %d) disconnected", data->fd);
                     is_connected = 0;
+                    epoll_remove_read_event(epoll_fd, data->fd);
+                    if(data->forward_fd != -1){
+                        epoll_remove_read_event(epoll_fd, data->forward_fd);
+                    }
                     close(data->fd);
                     free(data);
                 }
@@ -82,18 +98,43 @@ void run_event_loop(){
                             strcpy(buffer, "Bash container is NOT running...");
                         }
                         write(data->fd, buffer, strlen(buffer));
-                    } else if (strcmp(buffer, "connect") == 0 && !is_connected){
-                        if(data->forward_fd == -1){
-                            data->forward_fd = get_forward_unix_socket_fd(SHIM_FILE);
-                            epoll_add_read_event(epoll_fd, data->forward_fd, data->fd);
-                        }
-                        is_connected = 1;
-                        write(data->forward_fd, " ", 1);
+                    } else if (strcmp(buffer, "start") == 0){
                         memset(buffer, 0, sizeof(buffer));
-                        bytes_read = read(data->forward_fd, buffer, sizeof(buffer) - 1);
-                        if(buffer[0] == ' '){
-                            memmove(buffer, buffer + 1, strlen(buffer));
+                        if (is_running){
+                            strcpy(buffer, "Bash container already running...");
+                            xlog("<docker start> container already started. container fd: %d, is_running: %d", container_fd, is_running);
+                        } else {
+                            strcpy(buffer, "Bash container is running now ...");
+                            container_fd = get_forward_unix_socket_fd(SHIM_FILE);
+                            // data->forward_fd = container_fd;
+                            is_running = 1;
+                            xlog("<docker start> container started. container fd: %d, is_running: %d", container_fd, is_running);
                         }
+                        write(data->fd, buffer, strlen(buffer));
+
+                    } else if (strcmp(buffer, "attach") == 0 && !is_connected){
+                        memset(buffer, 0, sizeof(buffer));
+                        if (!is_running){
+                            strcpy(buffer, "==> Bash container is NOT running...");
+                        } else {
+                            counter++;
+                            data->forward_fd = container_fd;
+                            xlog("data->forward_fd = %i, data->fd = %i", data->forward_fd, data->fd);
+                            
+                            epoll_add_read_event(epoll_fd, data->forward_fd, data->fd);
+                            if(counter == 1){
+                                write(data->forward_fd, " ", 1); 
+                            } else {
+                                write(data->forward_fd, "\n", 1); 
+                            }                                     
+                            bytes_read = read(data->forward_fd, buffer, sizeof(buffer) - 1);
+                            xlog("received from bash: %s", buffer);
+                            if(buffer[0] == ' '){
+                                memmove(buffer, buffer + 1, strlen(buffer));
+                            }
+                            is_connected = 1;
+                        }
+                        xlog("<docker connect> buffer: %s. container fd: %d, is_running: %d", buffer, container_fd, is_running);
                         write(data->fd, buffer, strlen(buffer));
                     }
                 }
